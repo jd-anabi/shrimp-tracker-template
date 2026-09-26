@@ -1,0 +1,36 @@
+# Videos never go in git (GitHub rejects files over 100 MB). They live in the shared Google Drive folder.
+*.mov
+*.MOV
+*.mp4
+*.MP4
+*.m4v
+*.M4V
+*.avi
+*.AVI
+*.mkv
+*.hevc
+*.heic
+*.HEIC
+
+# Large working files (tracks, overlay videos, caches)
+results/work/
+data/raw/
+*.npy
+*.npz
+*.parquet
+*.h5
+
+# Python and tools
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.ipynb_checkpoints/
+
+# Operating systems
+.DS_Store
+Thumbs.db
+desktop.ini
