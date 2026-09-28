@@ -1,8 +1,8 @@
-"""Role D (validation): how good are our tracks?
+"""Role D (validation): how good is the tracking?
 
 Tests: tests/test_validate.py. Build it with your agent (tests first!).
-Use it twice: on the synthetic video (truth = generator output) and on your real video
-(truth = ~200 frames of a few shrimp tracked by hand).
+Track one shrimp twice for about 200 frames (the autotracker, and a teammate marking every
+frame by hand): the difference between the two measures your tracking error.
 """
 
 from __future__ import annotations
@@ -10,13 +10,15 @@ from __future__ import annotations
 import pandas as pd
 
 
-def compare_to_truth(tracks: pd.DataFrame, truth: pd.DataFrame, max_dist_px: float) -> dict:
-    """Match tracked positions to true positions frame by frame and score them.
+def compare_tracks(a: pd.DataFrame, b: pd.DataFrame) -> dict:
+    """Compare two trackings of the SAME shrimp (TRACK_COLUMNS tables), in the frames both contain.
 
     Returns a dict with at least:
-        recall        fraction of true positions with a tracked position within max_dist_px
-        precision     fraction of tracked positions with a true position within max_dist_px
-        rms_error_px  root-mean-square distance of matched pairs
-        id_switches   number of times a true shrimp's matched track_id changes
+        n_frames            number of frames in both tracks
+        rms_difference_mm   root-mean-square distance between the two positions
+        max_difference_mm   largest distance (a big value means one tracking jumped)
+        bias_mm             length of the mean difference vector (the two methods marking
+                            different points of the body, e.g. head vs. center)
+    Raise ValueError if the tracks have no frame in common.
     """
     raise NotImplementedError

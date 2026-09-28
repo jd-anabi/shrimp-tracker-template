@@ -12,7 +12,7 @@
 *.heic
 *.HEIC
 
-# Large working files (tracks, overlay videos, caches)
+# Large or temporary files. Tracker exports (data/tracks, .csv/.txt/.trk) DO go into git.
 results/work/
 data/raw/
 *.npy

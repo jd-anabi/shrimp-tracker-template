@@ -1,49 +1,53 @@
-"""Role D tests (validation scores). The tracks are built by hand, so the right scores are known.
+"""Role D tests (validation). Every expected value can be checked by hand.
 
 Until a function is written it raises NotImplementedError and its tests show as "xfailed".
 Once it exists the tests run for real. When they pass, delete the @pending line above them.
 """
 
 import numpy as np
-import pandas as pd
 import pytest
+from conftest import straight_track
 
 from shrimp import validate
 
 pending = pytest.mark.xfail(raises=NotImplementedError, strict=False, reason="not written yet")
 
 
-def truth_table():
-    """Two shrimp, 10 frames, 40 px apart."""
-    rows = [{"frame": f, "t_s": f / 240, "track_id": k, "x_px": 10.0 + f, "y_px": 20.0 + 40 * k}
-            for f in range(10) for k in (0, 1)]
-    return pd.DataFrame(rows)
+@pending
+def test_a_constant_offset():
+    a = straight_track(n_frames=240)
+    b = a.assign(x_mm=a["x_mm"] + 0.003, y_mm=a["y_mm"] + 0.004)  # 0.005 mm away in every frame
+    s = validate.compare_tracks(a, b)
+    assert s["n_frames"] == 240
+    assert s["rms_difference_mm"] == pytest.approx(0.005)
+    assert s["max_difference_mm"] == pytest.approx(0.005)
+    assert s["bias_mm"] == pytest.approx(0.005)
 
 
 @pending
-def test_perfect_tracks_score_perfectly():
-    tracks = truth_table().assign(track_id=lambda d: d["track_id"] + 7)  # ids need not match
-    s = validate.compare_to_truth(tracks, truth_table(), max_dist_px=2.0)
-    assert s["recall"] == pytest.approx(1.0) and s["precision"] == pytest.approx(1.0)
-    assert s["rms_error_px"] == pytest.approx(0.0, abs=1e-9)
-    assert s["id_switches"] == 0
+def test_only_frames_in_both_count():
+    a = straight_track(n_frames=240)                   # frames 0-239
+    b = straight_track(n_frames=200, start_frame=100)  # frames 100-299, a different line
+    b = b.drop(index=[10, 11]).reset_index(drop=True)  # frames 110 and 111 not marked
+    s = validate.compare_tracks(a, b)
+    assert s["n_frames"] == 140 - 2
+    both = a[a["frame"].isin(b["frame"])].set_index("frame")
+    d = np.hypot(both["x_mm"] - b.set_index("frame").loc[both.index, "x_mm"],
+                 both["y_mm"] - b.set_index("frame").loc[both.index, "y_mm"])
+    assert s["rms_difference_mm"] == pytest.approx(np.sqrt(np.mean(d ** 2)))
 
 
 @pending
-def test_offset_and_identity_swap_are_measured():
-    tracks = truth_table()
-    tracks["x_px"] += 0.3
-    tracks["y_px"] += 0.4  # every position is off by 0.5 px
-    late = tracks["frame"] >= 5
-    tracks.loc[late, "track_id"] = 1 - tracks.loc[late, "track_id"]  # the two ids swap at frame 5
-    s = validate.compare_to_truth(tracks, truth_table(), max_dist_px=2.0)
-    assert s["rms_error_px"] == pytest.approx(0.5)
-    assert s["id_switches"] == 2
+def test_one_bad_frame_shows_in_the_max():
+    a = straight_track(n_frames=100)
+    b = a.copy()
+    b.loc[50, "x_mm"] += 1.0
+    s = validate.compare_tracks(a, b)
+    assert s["max_difference_mm"] == pytest.approx(1.0)
+    assert s["rms_difference_mm"] == pytest.approx(np.sqrt(1.0 / 100))
 
 
 @pending
-def test_missed_detections_lower_recall_only():
-    tracks = truth_table().drop(index=np.arange(0, 20, 4))  # drop 5 of the 20 positions
-    s = validate.compare_to_truth(tracks, truth_table(), max_dist_px=2.0)
-    assert s["recall"] == pytest.approx(0.75)
-    assert s["precision"] == pytest.approx(1.0)
+def test_no_common_frame():
+    with pytest.raises(ValueError):
+        validate.compare_tracks(straight_track(n_frames=10), straight_track(n_frames=10, start_frame=50))

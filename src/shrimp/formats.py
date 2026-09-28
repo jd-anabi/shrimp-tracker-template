@@ -1,32 +1,29 @@
 """Tables passed between the roles. Change these only if the whole group agrees.
 
 Conventions (everyone, every module):
-    * x_px increases to the RIGHT, y_px increases DOWN (image rows).
-      The pixel in row r, column c has its center at (x_px = c, y_px = r).
-    * Units are in the column name: _px (pixels), _mm, _um, _s (seconds), _deg.
-    * t_s is REAL time in seconds: t_s = frame / fps_true, where fps_true comes
-      from the stopwatch calibration in data/manifest.csv, never from the file.
-    * Tables are pandas DataFrames; save them as CSV in results/work/.
+    * One track = one shrimp followed without a doubt about which shrimp it is = one point
+      mass in Tracker, exported to one file. If you are no longer sure which shrimp is which
+      (two shrimp touched, one crossed another), end the point mass at the last frame you are
+      sure of; if you can follow that shrimp again, continue in a new point mass (A2, A3, ...).
+    * Positions are in mm, in Tracker's axes: origin at the CENTER OF THE DISH, x to the
+      right, y UP (Tracker's default; the opposite of image rows).
+    * frame is the video frame number (Tracker's "frame" column). Real time is
+      t_s = frame / fps_true, where fps_true comes from the stopwatch clip
+      (data/manifest.csv), never from the video file.
+    * Units are in the column names: _mm, _s, _hz, _mm_s.
+    * Tables are pandas DataFrames, one row per shrimp per tracked frame, in time order
+      within each track.
 """
 
-# One row per detected shrimp per frame (Role B -> Role C)
-DETECTION_COLUMNS = [
-    "frame",      # int, frame index as delivered by shrimp.video.iter_frames
-    "t_s",        # float, real time (s)
-    "x_px",       # float, sub-pixel centroid, to the right
-    "y_px",       # float, sub-pixel centroid, downward
-    "area_px",    # float, area of the detected blob (pixels^2)
-    "length_px",  # float, major axis of the blob
-    "width_px",   # float, minor axis of the blob
-    "angle_deg",  # float, orientation of the major axis
+# One row per shrimp per tracked frame (Role A -> everyone)
+TRACK_COLUMNS = [
+    "track_id",  # str, the file name without its extension, e.g. "A", "B", "A2"
+    "frame",     # int, video frame number
+    "t_s",       # float, real time (s) = frame / fps_true
+    "x_mm",      # float, position (mm), to the right
+    "y_mm",      # float, position (mm), UP
 ]
 
-# Detections linked into tracks (Role C -> Role D); x_mm, y_mm added by Role A's functions
-TRACK_COLUMNS = DETECTION_COLUMNS + [
-    "track_id",   # int, same value for the same shrimp over time
-    "x_mm",       # float, position in mm (same axes as x_px)
-    "y_mm",       # float, position in mm (same axes as y_px)
-]
-
-# Ground truth written by the synthetic-video generator (Role D, validation)
-TRUTH_COLUMNS = ["frame", "t_s", "track_id", "x_px", "y_px"]
+# Columns every file exported from Tracker must contain. Tracker always writes t first;
+# choose frame, x and y under "Columns" in File > Export > Data.
+TRACKER_COLUMNS = ["t", "frame", "x", "y"]

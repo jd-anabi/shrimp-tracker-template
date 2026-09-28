@@ -1,7 +1,7 @@
 [project]
 name = "shrimp"
-version = "0.1.0"
-description = "Tracking brine shrimp nauplii in slow-motion phone videos (Physics M180G, Fall 2026)"
+version = "0.2.0"
+description = "Analyzing brine shrimp tracks from Tracker (Physics M180G, Fall 2026)"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -10,6 +10,7 @@ dependencies = [
     "pandas",
     "matplotlib",
     "opencv-python-headless",
+    "imageio-ffmpeg>=0.6.0",
 ]
 
 [dependency-groups]
