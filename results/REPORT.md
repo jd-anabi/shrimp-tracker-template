@@ -1,29 +1,55 @@
-# Group report: one video (due Monday Oct 5)
+# Report: brine shrimp at 1 and 3 days old (due Sunday Oct 4, 11:59 pm)
 
-Group: ___  Members and roles: ___
+TEMPLATE: copy this file to `results/<your name>/REPORT.md` and fill in your copy. Use your own data. This is an
+individual report.
 
-Most numbers below are printed by `uv run python -m shrimp.report <your video>`; say which window w and which settings you used.
+Figures: the `shrimp.compare` commands save theirs in `results/<your name>/figures/` (`tools_A.png`,
+`ages_edgetam.png`, ...). Put any other figure (a photo of your setup) in the same folder, and show each one with a
+link relative to this file, e.g. `![three tools](figures/tools_A.png)`.
 
-## 1. The video
-File name, recording date and time, shrimp age (hours since hatching), phone, fps_true (from the stopwatch clip: which two frames, which readings), dish size, water depth, temperature. Anything unusual.
+To hand it in, upload the **whole folder** `results/<your name>/` to your group's folder in the shared Google Drive,
+next to your slides. Not just this file: `figures/` must sit next to `REPORT.md`, or the report shows no figures.
 
-## 2. Tracking in Tracker
-Calibration (which ruler marks, stick length) and the scale check (a different ruler interval measured with Tracker's tape measure). Where the origin is. Autotracker settings (template size, evolution rate, automark level). How many shrimp and frames you tracked, how you handled collisions and the wall, and how long it took.
+Most numbers are printed by `uv run python -m shrimp.compare tools ...` and `... ages ...` (README section 6).
 
-## 3. Validation
-- **Synthetic tracks** (`synthetic.py`): the settings you used, and the speed and stroke frequency your analysis recovers vs. the truth. Also the example data (`data/example/README.md`).
-- **The same shrimp tracked twice** (`extra/A_manual.csv` vs. the autotracker, `validate.compare_tracks`): RMS difference, bias and largest difference. What causes each?
-- **Tracking noise** σ of a still object (`extra/still.csv`), and the speed noise it predicts, σ_v = √2 σ / ((w − 1) Δt). Compare with the fast wiggles in your speed plots.
-- **Jumps**: how many `find_jumps` found, and what you did about them. One figure of a track with its speed vs. time.
+Name: ___  Group: ___  Role: ___
 
-## 4. Physics
-- Speed distribution: histogram, mean ± SD per frame and per track (`summarize_tracks`), and the window w. Why do the per-frame and per-track SDs differ?
-- Stroke frequency: value ± frequency resolution, and how many tracks it comes from.
-- Body length: mean ± SD in mm, and how many shrimp.
-- Reynolds number, with the numbers you used.
-- A figure of all tracks in the dish.
+## 1. Introduction
+What you measured and why, in 2-4 sentences.
 
-## 5. Limitations, and what you would change before the 7-day recordings
+## 2. Setup and videos
+A photo of the setup. For each video (1 and 3 days old): file name, age (hours since hatching), fps_true
+(from the stopwatch clip: which frames, which readings), scale (calibration stick, and the tape-measure
+check), Tracker's step size, dish size, water depth, temperature. Anything unusual.
 
-## 6. Who did what
-One line per person: shrimp tracked, pull requests authored, pull requests reviewed.
+## 3. Three tools on the best shrimp (1 day old)
+- Which shrimp, which frames (first, last, step), and why you chose it.
+- Figure: x, y, vx, vy, ax, ay and speed vs. time for Tracker, SAM 2 and EdgeTAM:
+  `![three tools](figures/tools_A.png)`.
+- Table: mean speed, stroke frequency and period, and the RMS difference and bias from Tracker, for each
+  tool. How long each tool took you (setting up, running, checking).
+- **How SAM 2 and EdgeTAM give a position, and why it differs from Tracker's** (one paragraph): the model
+  returns the shrimp's outline; the script takes the center of the outline (the mean position of its
+  pixels) and converts it to mm with your Tracker calibration, while Tracker's autotracker follows the
+  point you clicked. The outline includes the beating antennae. Where does that put its center, how does
+  the center move during a stroke, and what does that do to the speed, the acceleration, and the RMS
+  difference and bias you measured?
+- Why the acceleration is much noisier than the velocity (Tracker's formulas and the step size).
+- Your favorite tool, and why (accuracy, failures, time, effort).
+
+## 4. At least 10 shrimp of each age (with your favorite tool)
+- Tool, number of shrimp of each age, about how long each was tracked, and anything you left out and why
+  (collisions, an outline that switched shrimp).
+- Histograms of average speed, stroke frequency and stroke period, both ages, with mean +/- SD and n:
+  `![two ages](figures/ages_edgetam.png)` (`ages_tracker.png` or `ages_sam2.png` if that is your tool).
+- Table: mean +/- SD for each age, the difference, and Welch's t, degrees of freedom and p.
+- Is each difference significant at the 0.05 level? Say in words what p means here, and why the sample
+  is shrimp, not frames. (The frequency and period tests are not independent: T = 1/f.)
+
+## 5. Discussion and limitations
+What else differs between the two videos besides age (dish, temperature, light, time of day, tool), how
+it could bias the comparison, and what you would change next week.
+
+## 6. Code and AI agent
+The functions you wrote (your role), what you asked the agent, how you checked the results, and your pull
+requests (authored and reviewed).

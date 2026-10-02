@@ -11,26 +11,34 @@ File names: your group letter, the date and time of recording, and what the clip
     groupB_2026-09-29_1325_main.MOV            the 60 s video of the dish (with the ruler in view)
     groupB_2026-09-29_1325_main_tracker.mp4    its copy for Tracker
     groupB_2026-09-29_1331_stopwatch.MOV       the stopwatch clip
+    groupB_2026-10-01_1330_main.MOV            Thursday: the same dish, 3 days old
 
 ## Tracks: in git
-One folder per video in `data/tracks/`, named like the video without its extension:
+One folder per video in `data/tracks/`, named like the video without its extension, and in it one
+folder per student (first name, lowercase):
 
     data/tracks/groupB_2026-09-29_1325_main/
-        A.csv  A2.csv  B.csv  ...           one file per Tracker point mass (= one track)
-        groupB_2026-09-29_1325_main.trk     the group's Tracker file
-        extra/still.csv                     a still object (a cyst stuck to the dish), autotracked
-        extra/A_manual.csv                  shrimp A marked by hand, frames 400-599
-        extra/body_lengths.csv              columns track_id,frame,length_mm (tape measure)
+        groupB_2026-09-29_1325_main.trk     the group's Tracker file (calibration)
+        ana/
+            A.csv  A2.csv  B.csv  ...       one file per Tracker point mass (= one track)
+            sam2/A.csv  sam2/run.log        written by shrimp.segment (SAM 2)
+            edgetam/A.csv  edgetam/B.csv    written by shrimp.segment (EdgeTAM)
+            extra/start.csv                 one mark per shrimp on one frame, several point masses
+                                            in one file: the input of shrimp.segment for many shrimp
 
-Every `.csv` or `.txt` file directly in the video's folder is read as a track, and its file
-name (without the extension) is the track's name. Keep anything else in `extra/`. These files
-are measurements: nobody edits them. To redo a track, export it again from Tracker.
+Every `.csv` or `.txt` file directly in a folder is read as a track, and its file name (without
+the extension) is the track's name: `A2` is the second piece of shrimp `A`. Keep anything else in
+`extra/`. Files written by `shrimp.segment` have the same format as Tracker's, plus empty x and y in
+frames where the model lost the shrimp. These files are measurements: nobody edits them. To redo a
+track, export it again from Tracker or run the script again. `overlay.mp4` (the video with the
+outlines) is written next to them but stays out of git.
 
-`data/example/` has the same layout, with synthetic tracks whose physics is known
-(see `data/example/README.md`). Use it to develop and check your code.
+`data/example/` (1 day old, with `sam2/` and `edgetam/` versions of shrimp A) and
+`data/example_day3/` (3 days old) are laid out like one student's folder, with synthetic tracks whose
+physics is known (see their README files). Use them to develop and check your code.
 
 ## data/manifest.csv
-One row per main video. Columns:
+One row per main video (so two rows per group: 1 and 3 days old). Columns:
 
 | column | meaning |
 |---|---|
