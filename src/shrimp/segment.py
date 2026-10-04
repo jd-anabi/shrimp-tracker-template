@@ -160,9 +160,10 @@ class Calibration:
 def fit_calibration(px, py, x, y) -> Calibration:
     """Least-squares fit of Tracker's pixel -> mm map from points where both are known.
 
-    Tracker's map is a similarity (scale, rotation, shift) with y flipped, so two different points
-    determine it and the residual of many points is zero up to rounding. Both the flipped and the
-    unflipped form are tried; the better one is kept.
+    Tracker's map is a similarity (scale, rotation, shift) with y flipped (its y points up, image rows
+    go down), so two different points determine it and the residual of many points is zero up to
+    rounding. The unflipped form is kept only if it fits clearly better: with two points, or points on
+    one line, both forms fit exactly, and the flip must not be left to rounding.
     """
     px, py, x, y = (np.asarray(v, float) for v in (px, py, x, y))
     ok = np.isfinite(px) & np.isfinite(py) & np.isfinite(x) & np.isfinite(y)
@@ -170,7 +171,7 @@ def fit_calibration(px, py, x, y) -> Calibration:
     if len(px) < 2 or np.hypot(np.ptp(px), np.ptp(py)) < 1.0:
         raise ValueError("Need at least two points at least 1 px apart with both mm and pixel coordinates "
                          "to get the calibration. Export a track that moves, or several point masses.")
-    best = None
+    fits = {}
     n = len(px)
     one, zero = np.ones(n), np.zeros(n)
     for flip in (True, False):
@@ -183,9 +184,10 @@ def fit_calibration(px, py, x, y) -> Calibration:
         b = np.concatenate([x, y])
         sol, *_ = np.linalg.lstsq(A, b, rcond=None)
         rms = float(np.sqrt(np.mean((A @ sol - b) ** 2)))
-        if best is None or rms < best.rms_mm:
-            best = Calibration(*map(float, sol), flip=flip, rms_mm=rms)
-    return best
+        fits[flip] = Calibration(*map(float, sol), flip=flip, rms_mm=rms)
+    if fits[True].rms_mm > 1e-6 and fits[False].rms_mm < 0.5 * fits[True].rms_mm:
+        return fits[False]  # a mirrored image: only when the data say so
+    return fits[True]
 
 
 def mask_center(mask: np.ndarray) -> tuple[float, float, int]:
