@@ -92,6 +92,17 @@ def test_calibration_from_a_straight_track():
     assert cal.to_mm(5.0, 230.0) == pytest.approx(tracker_map(5.0, 230.0))
 
 
+@pytest.mark.parametrize("a, b", [((10.5, 20.5), (200.5, 130.5)), ((80.5, 60.5), (240.5, 170.5))])
+def test_two_points_give_trackers_flipped_map(a, b):
+    # A mirrored map also fits two points (or points on one line) exactly, so rounding used to decide,
+    # differently on different computers. Tracker's y points up while image rows go down: its map is
+    # always the flipped one.
+    px, py = np.array([a[0], b[0]]), np.array([a[1], b[1]])
+    cal = segment.fit_calibration(px, py, *tracker_map(px, py))
+    assert cal.flip
+    assert cal.to_mm(a[0] + 2, a[1]) == pytest.approx(tracker_map(a[0] + 2, a[1]))
+
+
 def test_calibration_needs_two_points():
     with pytest.raises(ValueError):
         segment.fit_calibration([10.0], [10.0], [0.0], [0.0])
